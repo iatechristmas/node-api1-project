@@ -3,6 +3,8 @@ const shortid = require("shortid");
 
 const server = express();
 
+server.use(express.json());
+
 let users = [
   {
     id: shortid.generate(),
@@ -29,7 +31,7 @@ server.get("api/users/:id", (req, res) => {
   const { id } = req.params;
   users
     ? users.map((user) =>
-        user.id === id
+        user.id == id
           ? res.status(200).json(user)
           : res.status(404).json({
               message: "The user with the specified ID does not exist",
@@ -40,11 +42,27 @@ server.get("api/users/:id", (req, res) => {
       });
 });
 
+server.get("/api/users/:id", (req, res) => {
+  const { id } = req.params;
+  const user = users.find((user) => user.id === id);
+  if (user) {
+    res.status(200).json(user);
+  } else if (!user) {
+    res
+      .status(404)
+      .json({ message: "The user with the specified ID does not exist." });
+  } else {
+    res
+      .status(500)
+      .json({ errorMessage: "the user information could not be retrieved" });
+  }
+});
+
 //// POST ////
 
 server.post("/api/users", (req, res) => {
   const newUser = req.body;
-  //   newUser.id = shortid.generate();
+  newUser.id = shortid.generate();
   if (!newUser.name || !newUser.bio) {
     res
       .status(400)
